@@ -1,0 +1,30 @@
+name: Build iOS app
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Build unsigned IPA
+        run: |
+          set -o pipefail
+          bash build.sh 2>&1 | tee build-output.log
+      - name: Save build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build-output.log
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: TemplateTest-unsigned-IPA
+          path: build/TemplateTest-unsigned.ipa
+          if-no-files-found: error
